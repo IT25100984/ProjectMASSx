@@ -7,7 +7,6 @@
 
         <div class="d-flex align-items-center">
             <c:choose>
-                <%-- 2. Check if patient is logged in --%>
                 <c:when test="${not empty sessionScope.user}">
                     <span class="navbar-text text-white me-3">
                         Welcome, <strong>${user.firstName}</strong>
@@ -16,7 +15,6 @@
                     <a href="logout" class="btn btn-sm btn-light text-primary fw-bold">Logout</a>
                 </c:when>
 
-                <%-- 3. If not logged in, show login button --%>
                 <c:otherwise>
                     <a href="login" class="btn btn-sm btn-outline-light">Login</a>
                 </c:otherwise>

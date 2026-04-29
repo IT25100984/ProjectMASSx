@@ -1,6 +1,10 @@
 package com.projectmass.dao;
 
 import com.projectmass.dto.AppointmentDTO;
+import com.projectmass.model.Appointment;
+import com.projectmass.model.Consultation;
+import com.projectmass.model.Surgery;
+import com.projectmass.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -33,14 +37,18 @@ public class AppointmentDAO implements AppointmentDAOInterface {
 
             int id = rs.getInt("appointment_id");
             String fullDateTime = rs.getString("appt_date") + " at " + rawTime;
-
-            // We use 'opposite_name' as an alias in the SQL to handle doctor vs patient names
             String oppositeName = rs.getString("opposite_name");
             String status = rs.getString("status");
             boolean isRescheduled = rs.getBoolean("is_rescheduled");
             int lastModifiedBy = rs.getInt("last_modified_by");
 
-            return new AppointmentDTO(id, fullDateTime, oppositeName, status, isRescheduled, lastModifiedBy);
+            // 1. EXTRACT THE MISSING COLUMNS
+            String type = rs.getString("appointment_type");
+            String charge = rs.getString("additional_charge");
+
+            // 2. PASS THEM INTO THE CONSTRUCTOR (Ensure this matches your DTO constructor order)
+            return new AppointmentDTO(id, fullDateTime, oppositeName, status,
+                    isRescheduled, lastModifiedBy, type, charge);
         };
     }
 
@@ -77,7 +85,9 @@ public class AppointmentDAO implements AppointmentDAOInterface {
     }
 
     public List<AppointmentDTO> getAllAppointments() {
-        String sql = "SELECT a.appointment_id, a.appt_date, a.appt_time, a.status, a.is_rescheduled, a.last_modified_by, " +
+        // Add appointment_type and additional_charge to the SELECT list
+        String sql = "SELECT a.appointment_id, a.appt_date, a.appt_time, a.status, " +
+                "a.is_rescheduled, a.last_modified_by, a.appointment_type, a.additional_charge, " +
                 "CONCAT('Doc: ', d.last_name, ' | Pat: ', p.last_name) AS opposite_name " +
                 "FROM appointments a " +
                 "JOIN users d ON a.doctor_id = d.user_id " +
@@ -89,33 +99,79 @@ public class AppointmentDAO implements AppointmentDAOInterface {
 
     // --- SECTION 2: BOOKING & UPDATES ---
 
-    public boolean bookAppointment(int doctorID, int patientID, String date, String time) {
+    // Now includes 'type' and 'addCharge' for initial booking
+    public boolean bookAppointment(int doctorID, int patientID, String date, String time, String type, String addCharge) {
         // 1. Availability Check
         String checkSql = "SELECT COUNT(*) FROM appointments WHERE doctor_id = ? AND appt_date = ? AND appt_time = ? AND status != 'CANCELLED'";
         Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, doctorID, date, time);
 
         if (count != null && count > 0) return false;
 
-        // 2. Insert with tracking (Adding last_modified_by)
-        String insertSql = "INSERT INTO appointments (doctor_id, patient_id, appt_date, appt_time, status, last_modified_by) " +
-                "VALUES (?, ?, ?, ?, 'PENDING', ?)";
+        // 2. Insert with Tracking and Type Metadata
+        String insertSql = "INSERT INTO appointments (doctor_id, patient_id, appt_date, appt_time, status, last_modified_by, appointment_type, additional_charge) " +
+                "VALUES (?, ?, ?, ?, 'PENDING', ?, ?, ?)";
 
-        // We pass patientID twice: once for the patient column, once for the tracker
-        return jdbcTemplate.update(insertSql, doctorID, patientID, date, time, patientID) > 0;
+        return jdbcTemplate.update(insertSql, doctorID, patientID, date, time, patientID, type, addCharge) > 0;
     }
 
     public boolean updateAppointmentStatus(int appointmentID, String status, String newDate, String newTime, int userId) {
+        String sql;
+        int rowsAffected;
+
         if (newDate != null && !newDate.isEmpty() && newTime != null && !newTime.isEmpty()) {
-            // Rescheduling scenario
-            String sql = "UPDATE appointments SET status = ?, appt_date = ?, appt_time = ?, " +
+            sql = "UPDATE appointments SET status = ?, appt_date = ?, appt_time = ?, " +
                     "is_rescheduled = 1, last_modified_by = ? WHERE appointment_id = ?";
-            return jdbcTemplate.update(sql, status, newDate, newTime, userId, appointmentID) > 0;
+            rowsAffected = jdbcTemplate.update(sql, status, newDate, newTime, userId, appointmentID);
+        } else {
+            sql = "UPDATE appointments SET status = ?, last_modified_by = ? WHERE appointment_id = ?";
+            rowsAffected = jdbcTemplate.update(sql, status, userId, appointmentID);
         }
 
-        // Simple Status Change (e.g., Accepting or Cancelling)
-        // FIX: Include last_modified_by here so the JSP logic knows who performed the action.
-        String sql = "UPDATE appointments SET status = ?, last_modified_by = ? WHERE appointment_id = ?";
-        return jdbcTemplate.update(sql, status, userId, appointmentID) > 0;
+        // --- FILE HANDLING TRIGGER ---
+        // Inside updateAppointmentStatus...
+        if (rowsAffected > 0 && "CONFIRMED".equalsIgnoreCase(status)) {
+            try {
+                // 1. Fetch EVERYTHING needed for the log and the object
+                String fetchSql = "SELECT patient_id, doctor_id, appointment_type, additional_charge, appt_date, appt_time " +
+                        "FROM appointments WHERE appointment_id = ?";
+                java.util.Map<String, Object> data = jdbcTemplate.queryForMap(fetchSql, appointmentID);
+
+                String type = (String) data.get("appointment_type");
+                String addCharge = (String) data.get("additional_charge");
+                // Get the real date and time objects from the DB
+                String actualDate = data.get("appt_date").toString();
+                String actualTime = data.get("appt_time").toString();
+
+                Appointment apptObj;
+                if ("SURGERY".equalsIgnoreCase(type)) {
+                    // Match your Surgery constructor: (doctorID, patientID, date, time, theaterID)
+                    Surgery surg = new Surgery((int)data.get("doctor_id"), (int)data.get("patient_id"), actualDate, actualTime, "OT-1");
+                    surg.setAddCharge(addCharge);
+                    apptObj = surg;
+                } else {
+                    apptObj = new Consultation((int)data.get("doctor_id"), (int)data.get("patient_id"), actualDate, actualTime, "Room-101");
+                }
+
+                // 2. fee is now a numeric double (e.g., 7500.0)
+                double fee = apptObj.calculateFee();
+
+                // 3. Update the format string to show the numeric fee and the real date
+                // Result: 11|1|2|SURGERY|7500.00|2026-05-08
+                String logEntry = String.format("%d|%d|%d|%s|%.2f|%s",
+                        appointmentID,
+                        (int)data.get("patient_id"),
+                        (int)data.get("doctor_id"),
+                        type.toUpperCase(),
+                        fee,
+                        actualDate);
+
+                com.projectmass.service.FileService.logAppointmentToHistory(logEntry);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return rowsAffected > 0;
     }
 
     public boolean cancelAppointment(int appointmentId) {

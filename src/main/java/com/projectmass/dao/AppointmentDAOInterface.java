@@ -11,7 +11,7 @@ public interface AppointmentDAOInterface {
     List<AppointmentDTO> getAllAppointments();
 
     // Booking & Status Updates
-    boolean bookAppointment(int doctorID, int patientID, String date, String time);
+    boolean bookAppointment(int doctorID, int patientID, String date, String time, String type, String addCharge);
     boolean updateAppointmentStatus(int appointmentID, String status, String newDate, String newTime, int userId);
     boolean cancelAppointment(int appointmentId);
 

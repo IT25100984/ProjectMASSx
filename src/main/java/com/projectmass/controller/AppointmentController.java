@@ -28,6 +28,7 @@ public class AppointmentController {
     @Autowired
     private UserDAO userDAO;
 
+
     @GetMapping("/getAvailableSlots")
     @ResponseBody
     public List<String> getSlots(@RequestParam int doctorId, @RequestParam String date) {
@@ -43,19 +44,35 @@ public class AppointmentController {
         return userDAO.getDoctorsBySpecialization(specialization);
     }
 
-    // 1. Handles Appointment Booking (POST)
+    @GetMapping("/history")
+    @ResponseBody // This tells Spring to return JSON, not a JSP page
+    public List<String> getDoctorPatientHistory(@RequestParam int doctorID, HttpSession session) {
+        // 1. Get the current patient ID from the session
+        User user = (User) session.getAttribute("user");
+        int patientID = user.getUserID();
+
+        // 2. Call FileService to read billHistory.txt and filter results
+        return com.projectmass.service.FileService.readHistory(patientID, doctorID);
+    }
+
+    // 1. Handles Appointment Booking (POST) - UPDATED
     @PostMapping("/bookAppointment")
     public String bookAppointment(@RequestParam("date") String date,
                                   @RequestParam("time") String time,
                                   @RequestParam("doctorId") int doctorId,
+                                  @RequestParam("appointmentType") String type,
+                                  @RequestParam(value = "additionalCharge", required = false) String addCharge, // New
                                   HttpSession session) {
+
         User user = (User) session.getAttribute("user");
         if (user == null || !"PATIENT".equalsIgnoreCase(user.getRole())) {
             return "redirect:/login";
         }
 
-        // Logic: The patient is the first person to "modify" this record
-        boolean success = apptDAO.bookAppointment(doctorId, user.getUserID(), date, time);
+        // Logic: Pass the type and charge to the DAO
+        // If it's a Consultation, addCharge will naturally be "none" from the JSP
+        boolean success = apptDAO.bookAppointment(doctorId, user.getUserID(), date, time, type, addCharge);
+
         return success ? "redirect:/patientDashboard?msg=success" : "redirect:/book_appointment?error=failed";
     }
 
@@ -109,7 +126,6 @@ public class AppointmentController {
         if (user == null) return "redirect:/login";
 
         if ("rescheduled".equalsIgnoreCase(action)) {
-            // Pass user.getUserID() so the DAO knows who is initiating the reschedule
             boolean success = apptDAO.updateAppointmentStatus(id, "RESCHEDULED", newDate, newTime, user.getUserID());
 
             if (success) {

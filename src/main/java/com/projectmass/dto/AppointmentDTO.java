@@ -8,6 +8,8 @@ public class AppointmentDTO {
 
     private boolean isRescheduled;
     private int lastModifiedBy;
+    private String appointmentType;
+    private String additionalCharge;
 
     public AppointmentDTO() {}
 
@@ -24,6 +26,18 @@ public class AppointmentDTO {
         this.status = status;
         this.isRescheduled = isRescheduled;
         this.lastModifiedBy = lastModifiedBy;
+    }
+
+    public AppointmentDTO(int appointmentID, String dateTime, String oppositePartyName, String status,
+                          boolean isRescheduled, int lastModifiedBy, String appointmentType, String additionalCharge) {
+        this.appointmentID = appointmentID;
+        this.dateTime = dateTime;
+        this.oppositePartyName = oppositePartyName;
+        this.status = status;
+        this.isRescheduled = isRescheduled;
+        this.lastModifiedBy = lastModifiedBy;
+        this.appointmentType = appointmentType;
+        this.additionalCharge = additionalCharge;
     }
 
     // Getters and Setters
@@ -48,4 +62,10 @@ public class AppointmentDTO {
 
     public int getLastModifiedBy() { return lastModifiedBy; }
     public void setLastModifiedBy(int lastModifiedBy) { this.lastModifiedBy = lastModifiedBy; }
+
+    public String getAppointmentType() { return appointmentType; }
+    public void setAppointmentType(String appointmentType) { this.appointmentType = appointmentType; }
+
+    public String getAdditionalCharge() { return additionalCharge; }
+    public void setAdditionalCharge(String additionalCharge) { this.additionalCharge = additionalCharge; }
 }

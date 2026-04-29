@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8"  %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <jsp:useBean id="user" scope="session" class="com.projectmass.model.User" />
 
 <c:if test="${empty sessionScope.user || sessionScope.user.role != 'DOCTOR'}">
@@ -136,6 +137,63 @@
                                                 <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmCancel('${appt.appointmentID}')">Cancel</button>
                                             </c:otherwise>
                                         </c:choose>
+                                        <button type="button" class="btn btn-info btn-sm text-white"
+                                                data-bs-toggle="modal" data-bs-target="#aboutModal${appt.appointmentID}">
+                                            About
+                                        </button>
+                                    </div>
+
+                                    <%-- About Modal for each appointment --%>
+                                    <div class="modal fade" id="aboutModal${appt.appointmentID}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content border-0 shadow">
+                                                <div class="modal-header bg-info text-white">
+                                                    <h5 class="modal-title"><i class="bi bi-receipt-cutoff me-2"></i>Appointment Summary</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body p-4">
+                                                    <div class="row g-3">
+                                                        <div class="col-6">
+                                                            <label class="text-muted small fw-bold text-uppercase">Type</label>
+                                                            <p class="fw-bold text-primary mb-0">${appt.appointmentType}</p>
+                                                        </div>
+                                                        <div class="col-6 text-end">
+                                                            <label class="text-muted small fw-bold text-uppercase">Total Cost</label>
+                                                            <p class="fw-bold text-success mb-0">
+                                                                <c:choose>
+                                                                    <c:when test="${appt.appointmentType == 'SURGERY'}">
+                                                                        <%-- Match the logic in your Surgery.java --%>
+                                                                        <c:set var="extra" value="${appt.additionalCharge == 'anesthesia' ? 2500 :
+                                                                                                   appt.additionalCharge == 'facility' ? 1500 :
+                                                                                                   appt.additionalCharge == 'equipment' ? 3000 : 500}" />
+                                                                        LKR ${5000 + extra}.00
+                                                                    </c:when>
+                                                                    <c:otherwise>LKR 2000.00</c:otherwise>
+                                                                </c:choose>
+                                                            </p>
+                                                        </div>
+                                                        <div class="col-12 mt-3">
+                                                            <hr class="my-0 opacity-10">
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <label class="text-muted small fw-bold text-uppercase">Date</label>
+                                                            <p class="mb-0 text-dark">
+                                                                <c:out value="${fn:contains(appt.dateTime, ' at ') ? appt.dateTime.split(' at ')[0] : appt.dateTime}" />
+                                                            </p>
+                                                        </div>
+                                                        <div class="col-6 text-end">
+                                                            <label class="text-muted small fw-bold text-uppercase">Scheduled Time</label>
+                                                            <p class="mb-0 text-dark">
+                                                                <c:out value="${fn:contains(appt.dateTime, ' at ') ? appt.dateTime.split(' at ')[1] : '--:--'}" />
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer bg-light border-0">
+                                                    <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <%-- Reschedule Modal with Clean Hourly Select --%>
