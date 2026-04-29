@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class AppointmentDAO {
+public class AppointmentDAO implements AppointmentDAOInterface {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -90,13 +90,18 @@ public class AppointmentDAO {
     // --- SECTION 2: BOOKING & UPDATES ---
 
     public boolean bookAppointment(int doctorID, int patientID, String date, String time) {
+        // 1. Availability Check
         String checkSql = "SELECT COUNT(*) FROM appointments WHERE doctor_id = ? AND appt_date = ? AND appt_time = ? AND status != 'CANCELLED'";
         Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, doctorID, date, time);
 
         if (count != null && count > 0) return false;
 
-        String insertSql = "INSERT INTO appointments (doctor_id, patient_id, appt_date, appt_time, status) VALUES (?, ?, ?, ?, 'PENDING')";
-        return jdbcTemplate.update(insertSql, doctorID, patientID, date, time) > 0;
+        // 2. Insert with tracking (Adding last_modified_by)
+        String insertSql = "INSERT INTO appointments (doctor_id, patient_id, appt_date, appt_time, status, last_modified_by) " +
+                "VALUES (?, ?, ?, ?, 'PENDING', ?)";
+
+        // We pass patientID twice: once for the patient column, once for the tracker
+        return jdbcTemplate.update(insertSql, doctorID, patientID, date, time, patientID) > 0;
     }
 
     public boolean updateAppointmentStatus(int appointmentID, String status, String newDate, String newTime, int userId) {

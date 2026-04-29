@@ -198,14 +198,14 @@
                 <h5 class="modal-title">Update Professional Info</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="updateProfile" method="post">
+        <form action="updateProfile" method="post">
                 <div class="modal-body">
                     <%-- Predefined Specialization Dropdown --%>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Medical Specialization</label>
                         <select name="specialization" class="form-select" required>
                             <option value="" disabled ${empty doctor.specialization ? 'selected' : ''}>Choose specialization...</option>
-                            <c:forTokens items="General Physician,Cardiologist,Dermatologist,Pediatrician,Neurologist,Orthopedic"
+                            <c:forTokens items="General Practitioner,Cardiology,Dermatology,Pediatric,Neurology,Orthopedic"
                                          delims="," var="spec">
                                 <option value="${spec}" ${doctor.specialization == spec ? 'selected' : ''}>${spec}</option>
                             </c:forTokens>

@@ -1,6 +1,7 @@
 package com.projectmass.controller;
 
 import com.projectmass.dao.AppointmentDAO;
+import com.projectmass.dao.AppointmentDAOInterface;
 import com.projectmass.dao.UserDAO;
 import com.projectmass.model.User;
 import jakarta.servlet.http.HttpSession;
@@ -17,8 +18,12 @@ import java.util.List;
 @Controller
 public class AppointmentController {
 
+    private final AppointmentDAOInterface apptDAO;
+
     @Autowired
-    private AppointmentDAO apptDAO;
+    public AppointmentController(AppointmentDAOInterface appointmentDAO) {
+        this.apptDAO = appointmentDAO;
+    }
 
     @Autowired
     private UserDAO userDAO;
@@ -26,7 +31,6 @@ public class AppointmentController {
     @GetMapping("/getAvailableSlots")
     @ResponseBody
     public List<String> getSlots(@RequestParam int doctorId, @RequestParam String date) {
-        // This uses the refactored DAO logic we fixed earlier
         return apptDAO.getAvailableSlots(doctorId, date);
     }
 

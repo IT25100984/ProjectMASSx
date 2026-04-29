@@ -37,6 +37,9 @@
                         <option value="General Practitioner">General Practitioner</option>
                         <option value="Dermatology">Dermatology</option>
                         <option value="Cardiology">Cardiology</option>
+                        <option value="Pediatric">Pediatric</option>
+                        <option value="Neurology">Neurology</option>
+                        <option value="Orthopedic">Orthopedic</option>
                     </select>
                 </div>
 
@@ -46,7 +49,7 @@
                         <option value="" selected disabled>Choose a doctor...</option>
                         <c:forEach var="doc" items="${doctorList}">
                             <option value="${doc.userID}">Dr. ${doc.firstName} ${doc.lastName}</option>
-                        </c:forEach>
+                        </c:forEach>0
                     </select>
                 </div>
 
@@ -68,7 +71,12 @@
                 </div>
 
                 <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-primary py-2 shadow-sm">Confirm Booking</button>
+                    <%-- If the person viewing the page is the one who last modified it, disable the button --%>
+                    <button type="submit"
+                            class="btn btn-success"
+                            ${sessionScope.user.userID == appt.lastModifiedBy ? 'disabled' : ''}>
+                        Confirm Booking
+                    </button>
                     <a href="patientDashboard" class="btn btn-outline-secondary">Back to Dashboard</a>
                 </div>
             </form>
@@ -116,7 +124,6 @@
        if (!specSelect || !doctorSelect) return;
        let spec = specSelect.value;
 
-       // 🛑 REMOVE the return here. Instead, normalize the value:
        if (spec === "Select Specialization" || spec === "All Specializations") {
            spec = ""; // Sending an empty string tells the Servlet to fetch ALL
        }
@@ -163,11 +170,11 @@
        params.append("doctorId", doctorId);
        params.append("date", sanitizedDate);
 
-       // 🛑 DEBUGGING: Confirm these show in your F12 console
+       // DEBUGGING: Confirm these show in your F12 console
        console.log("Doctor ID detected:", doctorId);
        console.log("Original Date from UI:", rawDate);
 
-       // 🛑 SAFETY GUARD: Prevent the call if data is missing
+       // SAFETY GUARD: Prevent the call if data is missing
        if (!doctorId || !rawDate) {
            console.warn("Fetch blocked: Doctor or Date is missing.");
            return;
@@ -176,7 +183,7 @@
        const queryString = params.toString();
        const finalUrl = "getAvailableSlots?" + queryString;
 
-       // 🛑 DEBUGGING: This MUST show the full string now
+       // DEBUGGING: This MUST show the full string now
        console.log("Query String generated:", queryString);
        console.log("Final URL being called:", finalUrl);
 

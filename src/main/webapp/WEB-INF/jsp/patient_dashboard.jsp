@@ -53,11 +53,11 @@
                         </button>
                     </div>
                 </div>
-                <div class="btn-group">
+                <div class="d-flex flex-column gap-2" style="width: 200px;">
                     <button type="button" class="btn btn-warning d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#profileModal">
                         <i class="bi bi-pencil-square"></i> Update Info
                     </button>
-                    <a href="book_appointment" class="btn btn-primary">
+                    <a href="book_appointment" class="btn btn-primary d-flex align-items-center gap-2">
                         <i class="bi bi-calendar-plus"></i> Book New Appointment
                     </a>
                 </div>
@@ -122,6 +122,8 @@
                                         <c:when test="${appt.status == 'CONFIRMED'}">
                                             <button onclick="confirmCancel('${appt.appointmentID}')" class="btn btn-sm btn-outline-danger">Cancel</button>
                                         </c:when>
+
+
 
                                         <%-- Case 3: Appointment is Pending or Rescheduled --%>
                                         <c:when test="${appt.status == 'PENDING' || appt.status == 'RESCHEDULED'}">

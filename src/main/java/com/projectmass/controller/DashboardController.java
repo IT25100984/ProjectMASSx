@@ -22,7 +22,7 @@ import java.util.List;
 public class DashboardController {
 
     @Autowired
-    private AppointmentDAO apptDAO; // Don't forget to add @Repository to AppointmentDAO!
+    private AppointmentDAO apptDAO;
 
     @Autowired
     private UserDAO userDAO;
