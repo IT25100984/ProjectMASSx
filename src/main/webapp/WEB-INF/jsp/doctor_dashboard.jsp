@@ -213,11 +213,11 @@
                                                             <input type="date" name="newDate" class="form-control" required min="2026-04-22">
                                                         </div>
                                                         <div class="mb-3">
-                                                            <label class="form-label fw-bold">Select New Time (Hourly)</label>
+                                                            <label class="form-label fw-bold">Select New Time</label>
                                                             <c:set var="startH" value="${not empty currentStart ? currentStart.substring(0,2) : 8}" />
                                                             <c:set var="endH" value="${not empty currentEnd ? currentEnd.substring(0,2) : 18}" />
 
-                                                            <label class="form-label fw-bold">New Preferred Time (Hourly Only)</label>
+                                                            <label class="form-label fw-bold">(Hourly)</label>
                                                             <select name="newTime" class="form-select" required>
                                                                 <option value="" disabled selected>Choose a time...</option>
                                                                 <c:forEach var="hour" begin="${startH}" end="${endH}">
@@ -263,7 +263,7 @@
                         <label class="form-label fw-bold">Medical Specialization</label>
                         <select name="specialization" class="form-select" required>
                             <option value="" disabled ${empty doctor.specialization ? 'selected' : ''}>Choose specialization...</option>
-                            <c:forTokens items="General Practitioner,Cardiology,Dermatology,Pediatric,Neurology,Orthopedic"
+                            <c:forTokens items="General Practitioner,Pharmacist,Cardiology,Dermatology,Pediatric,Neurology,Orthopedic"
                                          delims="," var="spec">
                                 <option value="${spec}" ${doctor.specialization == spec ? 'selected' : ''}>${spec}</option>
                             </c:forTokens>

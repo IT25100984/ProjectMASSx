@@ -47,10 +47,6 @@ public class Patient extends User {
         this.bloodGroup = bloodGroup;
     }
 
-    /**
-     * Using Polymorphism to Override a method from User Object
-     * This way we can create a custom dashboard view for patients only.
-     */
     @Override
     public void displayDashboard() {
         System.out.println("Displaying Patient Portal: View your appointments and history.");

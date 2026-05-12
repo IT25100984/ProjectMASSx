@@ -33,7 +33,7 @@ public class PatientDAO {
     }
 
     public boolean updateMedicalHistory(int patientID, String newHistory) {
-        // We target only the medical_history column for a specific ID
+        // Target only the medical_history column for a specific ID
         String sql = "UPDATE users SET medical_history = ? WHERE user_id = ? AND role = 'PATIENT'";
 
         try (Connection conn = DBConnection.getConnection();

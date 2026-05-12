@@ -5,7 +5,9 @@ import com.projectmass.dao.UserDAO;
 import com.projectmass.dto.AppointmentDTO;
 import com.projectmass.model.Doctor;
 import com.projectmass.model.Patient;
+import com.projectmass.model.Pharmacy;
 import com.projectmass.model.User;
+import com.projectmass.service.MedFileService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,9 @@ public class DashboardController {
     @Autowired
     private UserDAO userDAO;
 
+    @Autowired
+    private MedFileService medFileService;
+
     @GetMapping("/patientDashboard")
     public String showPatientDashboard(HttpSession session, Model model, HttpServletResponse response) {
         // Prevent caching (Standard security for dashboards)
@@ -41,6 +46,24 @@ public class DashboardController {
             model.addAttribute("appointments", myAppointments);
 
             return "patient_dashboard";
+        }
+        return "redirect:/login";
+    }
+
+    @GetMapping("/pharmacistDashboard")
+    public String showPharmacistDashboard(Model model, HttpSession session) {
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser != null && "DOCTOR".equalsIgnoreCase(currentUser.getRole())) {
+
+            Doctor currentDoc = (Doctor) currentUser; // Safe cast
+
+            if ("PHARMACIST".equalsIgnoreCase(currentDoc.getSpecialization())) {
+                // Fetch the global queue for the pharmacist
+                List<Pharmacy> allOrders = medFileService.getAllOrders();
+                model.addAttribute("allOrders", allOrders);
+                return "pharmacist_dashboard";
+            }
         }
         return "redirect:/login";
     }

@@ -4,7 +4,7 @@ import com.projectmass.dto.AppointmentDTO;
 import com.projectmass.model.Appointment;
 import com.projectmass.model.Consultation;
 import com.projectmass.model.Surgery;
-import com.projectmass.service.FileService;
+import com.projectmass.service.ApptFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -16,15 +16,18 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class AppointmentDAO implements AppointmentDAOInterface {
 
     private final JdbcTemplate jdbcTemplate;
+    private final ApptFileService apptFileService;
 
     @Autowired
-    public AppointmentDAO(DataSource dataSource) {
+    public AppointmentDAO(DataSource dataSource, ApptFileService apptFileService) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
+        this.apptFileService = apptFileService;
     }
 
 
@@ -42,11 +45,11 @@ public class AppointmentDAO implements AppointmentDAOInterface {
             boolean isRescheduled = rs.getBoolean("is_rescheduled");
             int lastModifiedBy = rs.getInt("last_modified_by");
 
-            // 1. EXTRACT THE MISSING COLUMNS
+            // EXTRACT THE MISSING COLUMNS
             String type = rs.getString("appointment_type");
             String charge = rs.getString("additional_charge");
 
-            // 2. PASS THEM INTO THE CONSTRUCTOR (Ensure this matches your DTO constructor order)
+            // PASS THEM INTO THE CONSTRUCTOR (Ensure this matches your DTO constructor order)
             return new AppointmentDTO(id, fullDateTime, oppositeName, status,
                     isRescheduled, lastModifiedBy, type, charge);
         };
@@ -101,13 +104,13 @@ public class AppointmentDAO implements AppointmentDAOInterface {
 
     // Now includes 'type' and 'addCharge' for initial booking
     public boolean bookAppointment(int doctorID, int patientID, String date, String time, String type, String addCharge) {
-        // 1. Availability Check
+        // Availability Check
         String checkSql = "SELECT COUNT(*) FROM appointments WHERE doctor_id = ? AND appt_date = ? AND appt_time = ? AND status != 'CANCELLED'";
         Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, doctorID, date, time);
 
         if (count != null && count > 0) return false;
 
-        // 2. Insert with Tracking and Type Metadata
+        // Insert with Tracking and Type Metadata
         String insertSql = "INSERT INTO appointments (doctor_id, patient_id, appt_date, appt_time, status, last_modified_by, appointment_type, additional_charge) " +
                 "VALUES (?, ?, ?, ?, 'PENDING', ?, ?, ?)";
 
@@ -128,23 +131,19 @@ public class AppointmentDAO implements AppointmentDAOInterface {
         }
 
         // --- FILE HANDLING TRIGGER ---
-        // Inside updateAppointmentStatus...
         if (rowsAffected > 0 && "CONFIRMED".equalsIgnoreCase(status)) {
             try {
-                // 1. Fetch EVERYTHING needed for the log and the object
                 String fetchSql = "SELECT patient_id, doctor_id, appointment_type, additional_charge, appt_date, appt_time " +
                         "FROM appointments WHERE appointment_id = ?";
-                java.util.Map<String, Object> data = jdbcTemplate.queryForMap(fetchSql, appointmentID);
+                Map<String, Object> data = jdbcTemplate.queryForMap(fetchSql, appointmentID);
 
                 String type = (String) data.get("appointment_type");
                 String addCharge = (String) data.get("additional_charge");
-                // Get the real date and time objects from the DB
                 String actualDate = data.get("appt_date").toString();
                 String actualTime = data.get("appt_time").toString();
 
                 Appointment apptObj;
                 if ("SURGERY".equalsIgnoreCase(type)) {
-                    // Match your Surgery constructor: (doctorID, patientID, date, time, theaterID)
                     Surgery surg = new Surgery((int)data.get("doctor_id"), (int)data.get("patient_id"), actualDate, actualTime, "OT-1");
                     surg.setAddCharge(addCharge);
                     apptObj = surg;
@@ -152,20 +151,17 @@ public class AppointmentDAO implements AppointmentDAOInterface {
                     apptObj = new Consultation((int)data.get("doctor_id"), (int)data.get("patient_id"), actualDate, actualTime, "Room-101");
                 }
 
-                // 2. fee is now a numeric double (e.g., 7500.0)
                 double fee = apptObj.calculateFee();
 
-                // 3. Update the format string to show the numeric fee and the real date
-                // Result: 11|1|2|SURGERY|7500.00|2026-05-08
                 String logEntry = String.format("%d|%d|%d|%s|%.2f|%s",
                         appointmentID,
                         (int)data.get("patient_id"),
                         (int)data.get("doctor_id"),
                         type.toUpperCase(),
                         fee,
-                        actualDate);
+                        actualDate+"T"+actualTime);
 
-                com.projectmass.service.FileService.logAppointmentToHistory(logEntry);
+                apptFileService.logToFile(logEntry);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -182,19 +178,19 @@ public class AppointmentDAO implements AppointmentDAOInterface {
     // --- SECTION 3: AVAILABILITY ---
 
     public boolean setDoctorAvailability(int doctorId, Integer dayOfWeek, String startTime, String endTime) {
-        // 1. Clear any existing recurring schedule for this specific day (e.g., all Mondays)
+        // Clear any existing recurring schedule for this specific day (e.g., all Mondays)
         jdbcTemplate.update("DELETE FROM doctor_availability WHERE doctor_id = ? AND day_of_week = ?", doctorId, dayOfWeek);
 
-        // 2. Insert with day_of_week populated and available_date as NULL
+        // Insert with day_of_week populated and available_date as NULL
         String sql = "INSERT INTO doctor_availability (doctor_id, available_date, day_of_week, start_time, end_time) VALUES (?, NULL, ?, ?, ?)";
         return jdbcTemplate.update(sql, doctorId, dayOfWeek, startTime, endTime) > 0;
     }
 
     public boolean setDoctorAvailability(int doctorId, String availableDate, String startTime, String endTime) {
-        // 1. Clear any specific override for this exact date
+        // Clear any specific override for this exact date
         jdbcTemplate.update("DELETE FROM doctor_availability WHERE doctor_id = ? AND available_date = ?", doctorId, availableDate);
 
-        // 2. Insert with available_date populated and day_of_week as NULL
+        // Insert with available_date populated and day_of_week as NULL
         String sql = "INSERT INTO doctor_availability (doctor_id, available_date, day_of_week, start_time, end_time) VALUES (?, ?, NULL, ?, ?)";
         return jdbcTemplate.update(sql, doctorId, availableDate, startTime, endTime) > 0;
     }

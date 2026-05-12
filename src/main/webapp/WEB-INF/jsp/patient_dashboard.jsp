@@ -60,6 +60,11 @@
                     <a href="book_appointment" class="btn btn-primary d-flex align-items-center gap-2">
                         <i class="bi bi-calendar-plus"></i> Book New Appointment
                     </a>
+                    <c:if test="${user.role == 'PATIENT'}">
+                        <a href="orderPrescription" class="btn btn-success btn-lg shadow-sm mt-2">
+                            <i class="bi bi-capsule me-2"></i>Order Prescription
+                        </a>
+                    </c:if>
                 </div>
             </div>
         </div>
@@ -172,6 +177,11 @@
                                                                                                    appt.additionalCharge == 'equipment' ? 3000 : 500}" />
                                                                         LKR ${5000 + extra}.00
                                                                     </c:when>
+
+                                                                    <c:when test="${appt.appointmentType == 'PHARMACY'}">
+                                                                        LKR ${appt.totalFee}.00
+                                                                    </c:when>
+
                                                                     <c:otherwise>LKR 2000.00</c:otherwise>
                                                                 </c:choose>
                                                             </p>
@@ -216,7 +226,7 @@
                                                         </div>
 
                                                         <div class="mb-3">
-                                                            <label class="form-label fw-bold">New Preferred Time (Hourly Only)</label>
+                                                            <label class="form-label fw-bold">New Preferred Time (Hourly)</label>
                                                             <%-- Extract hour safely --%>
                                                             <c:set var="startH" value="${not empty currentStart ? currentStart.substring(0,2) : 08}" />
                                                             <c:set var="endH" value="${not empty currentEnd ? currentEnd.substring(0,2) : 18}" />

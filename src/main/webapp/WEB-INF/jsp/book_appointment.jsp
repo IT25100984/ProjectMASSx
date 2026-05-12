@@ -56,6 +56,7 @@
                         <%-- Change value to "All Specializations" to match your JS check --%>
                         <option value="All Specializations">All Specializations</option>
                         <option value="General Practitioner">General Practitioner</option>
+                        <option value="Pharmacist">Pharmacist</option>
                         <option value="Dermatology">Dermatology</option>
                         <option value="Cardiology">Cardiology</option>
                         <option value="Pediatric">Pediatric</option>
@@ -236,7 +237,7 @@
         const timeSelect = document.getElementById("timeSlotSelect");
         const historyBtn = document.getElementById('viewHistoryBtn'); // Added this
 
-        // 1. Reset everything to a clean state
+        // Reset everything to a clean state
         timeSelect.innerHTML = '<option value="" selected disabled>Choose a date & doctor first...</option>';
         if (historyBtn) historyBtn.disabled = true; // Disable history until a new doctor is picked
 
@@ -266,7 +267,7 @@
                     doctorSelect.appendChild(option);
                 });
 
-                // 2. Trigger a slot refresh check (optional, but good for UX)
+                // Trigger a slot refresh check (optional, but good for UX)
                 fetchSlots();
             })
             .catch(err => {

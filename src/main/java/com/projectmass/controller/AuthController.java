@@ -1,6 +1,7 @@
 package com.projectmass.controller;
 
 import com.projectmass.dao.UserDAO;
+import com.projectmass.model.Doctor;
 import com.projectmass.model.User;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,13 +16,13 @@ public class AuthController {
     @Autowired
     private UserDAO userDAO; // Spring finds your @Repository UserDAO automatically
 
-    // 1. Show the Login Page (The GET request)
+    // Show the Login Page (The GET request)
     @GetMapping("/login")
     public String showLoginPage() {
         return "login"; // This looks for login.jsp
     }
 
-    // 2. Handle Login Logic (The POST request)
+    // Handle Login Logic (The POST request)
     @PostMapping("/login")
     public String login(@RequestParam("username") String email,
                         @RequestParam("password") String pass,
@@ -33,18 +34,25 @@ public class AuthController {
 
         if (user != null) {
             session.setAttribute("user", user);
+            String role = user.getRole().toUpperCase();
 
-            if ("DOCTOR".equalsIgnoreCase(user.getRole())) {
-                return "redirect:/doctorDashboard";
-            } else {
-                return "redirect:/patientDashboard";
-            }
-        } else {
-            return "redirect:/login?error=failed";
+            // Redirect based on role
+            return switch (role) {
+                case "ADMIN" -> "redirect:/adminDashboard";
+                case "PATIENT" -> "redirect:/patientDashboard";
+                case "DOCTOR" -> {
+                    Doctor doc = (Doctor) user;
+                    yield "PHARMACIST".equalsIgnoreCase(doc.getSpecialization())
+                            ? "redirect:/pharmacistDashboard"
+                            : "redirect:/doctorDashboard";
+                }
+                default -> "redirect:/login?error=invalidRole";
+            };
         }
+        return "redirect:/login?error=true";
     }
 
-    // 3. Handle Logout Logic
+    // Handle Logout Logic
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         if (session != null) {
@@ -53,13 +61,13 @@ public class AuthController {
         return "redirect:/login";
     }
 
-    // 4. Show the Registration Page
+    // Show the Registration Page
     @GetMapping("/register")
     public String showRegisterPage() {
         return "register"; // Looks for /WEB-INF/jsp/register.jsp
     }
 
-    // 5. Handle Registration Logic
+    // Handle Registration Logic
     @PostMapping("/register")
     public String registerUser(@RequestParam("firstName") String firstName,
                                @RequestParam("lastName") String lastName,

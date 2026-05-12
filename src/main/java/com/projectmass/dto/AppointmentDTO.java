@@ -1,7 +1,7 @@
 package com.projectmass.dto;
 
 public class AppointmentDTO {
-    private int appointmentID; // 👈 Add this field
+    private int appointmentID;
     private String dateTime;
     private String oppositePartyName;
     private String status;
@@ -53,10 +53,6 @@ public class AppointmentDTO {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    /**
-     * Standard JavaBean getter for boolean.
-     * JSP EL will find this when you call ${appt.rescheduled}
-     */
     public boolean isRescheduled() { return isRescheduled; }
     public void setRescheduled(boolean rescheduled) { this.isRescheduled = rescheduled; }
 

@@ -45,7 +45,7 @@ public class User {
     public void setUserID(int userID) {
         this.userID = userID;
     }
-
+    public String getSpecialization(){ return null; }
     public String getFirstName() {
         return firstName;
     }

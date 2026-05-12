@@ -1,87 +1,63 @@
 package com.projectmass.service;
 
 import java.io.*;
-import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileService {
+public abstract class FileService<T> {
 
-    private static final String FILE_NAME = "billHistory.txt";
+    protected abstract String getFileName();
+    protected abstract String getHeader();
 
-    public static void logAppointmentToHistory(String data) {
+    // Subclasses define how to turn an object into a string line
+    protected abstract String mapToString(T item);
+
+    // Subclasses define how to check if a line matches a specific ID
+    protected abstract boolean isMatch(String line, int... ids);
+
+    public void logToFile(T data) {
+        File file = new File(getFileName());
         try {
-            // 1. Get the path to the project root
-            File file = new File(FILE_NAME);
+            System.out.println("File absolute path: " + file.getAbsolutePath());
 
-            // 2. Defensive Check: If file doesn't exist, create it manually
             if (!file.exists()) {
-                System.out.println("DEBUG: File does not exist. Creating new file: " + file.getAbsolutePath());
-                file.createNewFile();
-
-                // Optional: Write a header if it's a brand new file
-                try (PrintWriter out = new PrintWriter(new FileWriter(file, true))) {
-                    out.println("=== PROJECT MASS APPOINTMENT BILLING HISTORY ===");
-                    out.println("Generated on: " + java.time.LocalDateTime.now());
-                    out.println("------------------------------------------------");
+                if (file.createNewFile()) {
+                    try (PrintWriter out = new PrintWriter(new FileWriter(file, true))) {
+                        out.println("=== " + getHeader() + " ===");
+                        out.println("Generated on: " + java.time.LocalDateTime.now());
+                        out.println("------------------------------------------------");
+                    }
+                } else {
+                    System.err.println("Could not create file: " + file.getAbsolutePath());
                 }
             }
 
-            // 3. Append the actual data
+            //System.out.println("Writing order: " + mapToString(data));
+
             try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
-                out.println(data);
-                out.flush(); // Force the data out of the RAM and onto the disk
-                System.out.println("DEBUG: Successfully wrote to file.");
+                out.println(mapToString(data));
+                out.flush();
             }
-
         } catch (IOException e) {
-            System.err.println("CRITICAL ERROR: Could not write to file system.");
+            System.err.println("CRITICAL ERROR: Could not write to " + getFileName());
             e.printStackTrace();
         }
     }
 
-    public static List<String> getHistoryForAppointment(int targetID) {
-        List<String> history = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader("billHistory.txt"))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                // Check if the line starts with our target Appointment ID
-                if (line.startsWith(targetID + "|")) {
-                    history.add(line);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return history;
-    }
 
-    public static List<String> readHistory(int patientID, int doctorID) {
+    public List<String> readFile(int... ids) {
         List<String> results = new ArrayList<>();
-        File file = new File(FILE_NAME);
+        File file = new File(getFileName());
 
         if (!file.exists()) return results;
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
-                // Skip headers or empty lines
                 if (line.startsWith("=") || line.startsWith("-") || line.trim().isEmpty()) continue;
 
-                String[] parts = line.split("\\|");
-                if (parts.length >= 4) {
-                    // Assuming format: ApptID | PatientID | DoctorID | Type | Details | Cost
-                    // Adjust the index [1] and [2] based on how you order your log string
-                    try {
-                        int filePatientID = Integer.parseInt(parts[1].trim());
-                        int fileDoctorID = Integer.parseInt(parts[2].trim());
-
-                        if (filePatientID == patientID && fileDoctorID == doctorID) {
-                            results.add(line);
-                        }
-                    } catch (NumberFormatException e) {
-                        // Skip lines that don't have valid IDs
-                    }
+                if (isMatch(line, ids)) {
+                    results.add(line);
                 }
             }
         } catch (IOException e) {
@@ -90,4 +66,36 @@ public class FileService {
         return results;
     }
 
+    public List<String> readAll() {
+        List<String> results = new ArrayList<>();
+        File file = new File(getFileName());
+
+        if (!file.exists()) return results;
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                // Skip metadata/headers
+                if (line.startsWith("=") || line.startsWith("-") ||
+                        line.startsWith("Generated") || line.trim().isEmpty()) continue;
+                results.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+    public void writeAll(List<String> lines) {
+        File file = new File(getFileName());
+        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, false)))) {
+            for (String line : lines) {
+                out.println(line);
+            }
+            out.flush();
+        } catch (IOException e) {
+            System.err.println("CRITICAL ERROR: Could not overwrite " + getFileName());
+            e.printStackTrace(); // show the real cause
+        }
+    }
 }

@@ -58,10 +58,6 @@ public class Doctor extends User {
     }
     public void setLicenseID(int licenseID) { this.licenseID = licenseID;}
 
-    /**
-     * Using Polymorphism to Override a method from User Object
-     * This way we can create a custom dashboard view for doctors.
-     */
     @Override
     public void displayDashboard() {
         System.out.println("Displaying Doctor Portal for: " + getFirstName() + " " + getLastName());
