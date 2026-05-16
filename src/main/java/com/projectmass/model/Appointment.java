@@ -21,8 +21,8 @@ public abstract class Appointment {
     public abstract double calculateFee();
 
     // Standard Getters and Setters (Encapsulation)
-    public int getAppointmentID() { return appointmentID; }
-    public void setAppointmentID(int id) { this.appointmentID = id; }
+    public int getAppointmentId() { return appointmentID; }
+    public void setAppointmentId(int id) { this.appointmentID = id; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

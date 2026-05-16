@@ -44,14 +44,15 @@ public class AppointmentDAO implements AppointmentDAOInterface {
             String status = rs.getString("status");
             boolean isRescheduled = rs.getBoolean("is_rescheduled");
             int lastModifiedBy = rs.getInt("last_modified_by");
-
+            int doctorId = rs.getInt("doctor_id");
+            int patientId = rs.getInt("patient_id");
             // EXTRACT THE MISSING COLUMNS
             String type = rs.getString("appointment_type");
             String charge = rs.getString("additional_charge");
 
             // PASS THEM INTO THE CONSTRUCTOR (Ensure this matches your DTO constructor order)
             return new AppointmentDTO(id, fullDateTime, oppositeName, status,
-                    isRescheduled, lastModifiedBy, type, charge);
+                    isRescheduled, lastModifiedBy, type, charge, doctorId, patientId);
         };
     }
 
@@ -88,9 +89,10 @@ public class AppointmentDAO implements AppointmentDAOInterface {
     }
 
     public List<AppointmentDTO> getAllAppointments() {
-        // Add appointment_type and additional_charge to the SELECT list
+        // Explicitly added a.doctor_id so the row mapper can read it safely
         String sql = "SELECT a.appointment_id, a.appt_date, a.appt_time, a.status, " +
                 "a.is_rescheduled, a.last_modified_by, a.appointment_type, a.additional_charge, " +
+                "a.doctor_id, a.patient_id, " +
                 "CONCAT('Doc: ', d.last_name, ' | Pat: ', p.last_name) AS opposite_name " +
                 "FROM appointments a " +
                 "JOIN users d ON a.doctor_id = d.user_id " +

@@ -1,15 +1,20 @@
 package com.projectmass.model;
 
-public class User {
+import java.time.LocalDateTime;
+
+public class User implements UserInteraction{
     private int userID;
     private String firstName;
     private String lastName;
     private String email;
     private String role;
     private String password;
+    private LocalDateTime sessionTimestamp;
 
     // Empty constructor for Doctor and Patient Objects to access private variables
-    public User() {}
+    public User() {
+        this.sessionTimestamp = LocalDateTime.now();
+    }
 
     // Created constructor for current users
     public User(int userID, String firstname, String lastname, String email, String password, String role) {
@@ -19,6 +24,7 @@ public class User {
         this.email = email;
         this.password = password;
         this.role = role;
+        this.sessionTimestamp = LocalDateTime.now();
     }
     // Created constructor for new users (to avoid unknown userID issue)
     public User(String firstName, String lastName, String email, String password, String role) {
@@ -27,6 +33,7 @@ public class User {
         this.email = email;
         this.password = password;
         this.role = role;
+        this.sessionTimestamp = LocalDateTime.now();
     }
     // updateUser method to update current users data
     public void updateUser(int userID, String firstname, String lastname, String email, String password, String role) {
@@ -36,6 +43,16 @@ public class User {
         this.email = email;
         this.password = password;
         this.role = role;
+    }
+
+    @Override
+    public String getInteractionType() {
+        return "STANDARD_USER_SESSION";
+    }
+
+    @Override
+    public LocalDateTime getTimestamp() {
+        return this.sessionTimestamp;
     }
 
     // implemented getters and setters for private variables

@@ -150,6 +150,9 @@
                                                 data-bs-toggle="modal" data-bs-target="#aboutModal${appt.appointmentID}">
                                             About
                                         </button>
+                                        <a href="feedback?appointmentId=${appt.appointmentID}&doctorId=${appt.doctorId}" class="btn btn-primary btn-sm">
+                                            <i class="bi bi-star-fill me-1"></i>Review
+                                        </a>
                                     </div>
 
                                     <%-- About Modal for Patient --%>

@@ -38,6 +38,7 @@
                             <select name="role" class="form-select">
                                 <option value="PATIENT">Patient</option>
                                 <option value="DOCTOR">Doctor</option>
+                                <option value="ADMIN">Admin</option>
                             </select>
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Create Account</button>

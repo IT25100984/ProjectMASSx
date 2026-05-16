@@ -1,12 +1,16 @@
 package com.projectmass.controller;
 
+import com.projectmass.dao.AdminDAO;
 import com.projectmass.dao.UserDAO;
+import com.projectmass.model.Admin;
 import com.projectmass.model.Doctor;
 import com.projectmass.model.User;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -15,6 +19,23 @@ public class AuthController {
 
     @Autowired
     private UserDAO userDAO; // Spring finds your @Repository UserDAO automatically
+
+    @Autowired
+    private AdminDAO adminDAO; // 1. Inject your new DAO at the top
+
+    @PostMapping("/registerAdmin") // Or inside your matching registration router handler
+    public String registerAdminAccount(@ModelAttribute Admin admin, Model model) {
+
+        // 2. Execute registration through the dedicated admin data pipeline
+        boolean success = adminDAO.registerAdmin(admin);
+
+        if (success) {
+            return "redirect:/login?msg=reg_success";
+        } else {
+            model.addAttribute("error", "Database error: Could not commit Admin registry record.");
+            return "register";
+        }
+    }
 
     // Show the Login Page (The GET request)
     @GetMapping("/login")

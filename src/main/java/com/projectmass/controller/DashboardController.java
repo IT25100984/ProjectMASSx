@@ -1,6 +1,7 @@
 package com.projectmass.controller;
 
 import com.projectmass.dao.AppointmentDAO;
+import com.projectmass.dao.FeedbackDAO;
 import com.projectmass.dao.UserDAO;
 import com.projectmass.dto.AppointmentDTO;
 import com.projectmass.model.Doctor;
@@ -28,6 +29,9 @@ public class DashboardController {
 
     @Autowired
     private UserDAO userDAO;
+
+    @Autowired
+    private FeedbackDAO feedbackDAO;
 
     @Autowired
     private MedFileService medFileService;
@@ -96,6 +100,7 @@ public class DashboardController {
 
             // This name "adminApps" must match your admin_dashboard.jsp loop
             model.addAttribute("adminApps", allAppointments);
+            model.addAttribute("allFeedback", feedbackDAO.getAllFeedback());
 
             return "admin_dashboard";
         }

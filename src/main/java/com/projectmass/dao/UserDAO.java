@@ -1,5 +1,6 @@
 package com.projectmass.dao;
 
+import com.projectmass.model.Admin;
 import com.projectmass.model.Doctor;
 import com.projectmass.model.Patient;
 import com.projectmass.model.User;
@@ -48,6 +49,14 @@ public class UserDAO {
                 pat.setBloodGroup(rs.getString("blood_group"));
                 pat.setMedicalHistory(rs.getString("medical_history"));
                 user = pat;
+            } else if ("ADMIN".equalsIgnoreCase(role)) {
+                    Admin admin = new Admin();
+                    admin.setUserID(rs.getInt("user_id"));
+                    admin.setFirstName(rs.getString("first_name"));
+                    admin.setLastName(rs.getString("last_name"));
+                    admin.setEmail(rs.getString("email"));
+                    admin.setRole(role);
+                    user = admin;
             } else {
                 user = new User();
             }

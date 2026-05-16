@@ -10,6 +10,10 @@ public class AppointmentDTO {
     private int lastModifiedBy;
     private String appointmentType;
     private String additionalCharge;
+    private int doctorId;
+    private int patientId;
+    private String patientName;
+    private String doctorName;
 
     public AppointmentDTO() {}
 
@@ -29,7 +33,7 @@ public class AppointmentDTO {
     }
 
     public AppointmentDTO(int appointmentID, String dateTime, String oppositePartyName, String status,
-                          boolean isRescheduled, int lastModifiedBy, String appointmentType, String additionalCharge) {
+                          boolean isRescheduled, int lastModifiedBy, String appointmentType, String additionalCharge, int doctorId, int patientId) {
         this.appointmentID = appointmentID;
         this.dateTime = dateTime;
         this.oppositePartyName = oppositePartyName;
@@ -38,6 +42,8 @@ public class AppointmentDTO {
         this.lastModifiedBy = lastModifiedBy;
         this.appointmentType = appointmentType;
         this.additionalCharge = additionalCharge;
+        this.doctorId = doctorId;
+        this.patientId = patientId;
     }
 
     // Getters and Setters
@@ -46,6 +52,12 @@ public class AppointmentDTO {
 
     public String getDateTime() { return dateTime; }
     public void setDateTime(String dateTime) { this.dateTime = dateTime; }
+
+    public String getPatientName() { return patientName; }
+    public void setPatientName(String patientName) { this.patientName = patientName; }
+
+    public String getDoctorName() { return doctorName; }
+    public void setDoctorName(String doctorName) { this.doctorName = doctorName; }
 
     public String getOppositePartyName() { return oppositePartyName; }
     public void setOppositePartyName(String oppositePartyName) { this.oppositePartyName = oppositePartyName; }
@@ -64,4 +76,10 @@ public class AppointmentDTO {
 
     public String getAdditionalCharge() { return additionalCharge; }
     public void setAdditionalCharge(String additionalCharge) { this.additionalCharge = additionalCharge; }
+
+    public int getDoctorId() { return doctorId; }
+    public void setDoctorId(int doctorId) { this.doctorId = doctorId; }
+
+    public int getPatientId() { return patientId; }
+    public void setPatientId(int patientId) { this.patientId = patientId; }
 }

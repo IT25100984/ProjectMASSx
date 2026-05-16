@@ -7,6 +7,12 @@
         <a class="navbar-brand fw-bold" href="/">ProjectMASS</a>
 
         <div class="d-flex align-items-center">
+
+            <%-- PUBLIC REVIEWS MODAL TRIGGER BUTTON --%>
+            <button type="button" class="btn btn-sm btn-outline-warning me-3 text-white border-warning" data-bs-toggle="modal" data-bs-target="#publicReviewsModal">
+                <i class="bi bi-star-fill text-warning me-1"></i> Patient Reviews
+            </button>
+
             <c:choose>
                 <%-- CASE 1: User is Logged In --%>
                 <c:when test="${not empty sessionScope.user}">
@@ -45,3 +51,6 @@
         </div>
     </div>
 </nav>
+
+<%-- INJECT THE MODAL CONTENT DYNAMICALLY AT THE BOTTOM --%>
+<%@ include file="feedback.jsp" %>
