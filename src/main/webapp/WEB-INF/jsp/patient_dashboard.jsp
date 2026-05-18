@@ -33,12 +33,13 @@
         </div>
     </c:if>
 
-    <div class="p-5 mb-4 bg-white rounded-3 shadow-sm border">
-        <h1 class="display-5 fw-bold">Patient Dashboard</h1>
+<div class="p-5 mb-4 text-black rounded-3 shadow"
+     style="background: linear-gradient(135deg, #ffffff -15%, #7dd3fc 20%, #38b6ff 60%, #0284c7 100%);">        <h1 class="display-5 fw-bold">Patient Dashboard</h1>
         <p class="col-md-8 fs-4 text-muted">Manage your medical appointments and records here.</p>
     </div>
 
-    <div class="card shadow border-0 mb-4">
+    <div class="card shadow border-0 mb-4 text-black rounded-3 shadow"
+     style="background: linear-gradient(135deg, #f8fafc 0%, #38b6ff 45%, #0d6efd 100%);">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -47,9 +48,10 @@
                         <strong>Blood Group:</strong>
                         <span class="badge bg-danger">${patient.bloodGroup}</span>
                         <%-- New trigger for the View Modal --%>
-                        <button type="button" class="btn btn-link btn-sm p-0 ms-2 text-decoration-none"
-                                data-bs-toggle="modal" data-bs-target="#viewMedicalModal">
-                            <i class="bi bi-eye"></i> View Medical History
+                        <button type="button" class="btn btn-sm ms-2"
+                                data-bs-toggle="modal" data-bs-target="#viewMedicalModal"
+                                style="background-color: rgba(255, 255, 255, 0.6); color: #1e3a8a; border: 1px solid rgba(30, 58, 138, 0.2); border-radius: 20px; padding: 4px 14px; font-weight: 600; font-size: 0.85rem;">
+                            <i class="bi bi-eye-fill me-1" style="color: #1e3a8a;"></i> View Medical History
                         </button>
                     </div>
                 </div>
@@ -65,6 +67,11 @@
                             <i class="bi bi-capsule me-2"></i>Order Prescription
                         </a>
                     </c:if>
+                    <form action="/profile/delete" method="POST" onsubmit="return confirm('WARNING: Are you absolutely certain you want to permanently delete your profile? This cannot be undone.');" style="margin-top: 10px; width: 100%;">
+                        <button type="submit" class="btn btn-danger" style="width: 100%; background-color: #dc3545; color: white; font-weight: bold; border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px;">
+                            Delete Profile
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

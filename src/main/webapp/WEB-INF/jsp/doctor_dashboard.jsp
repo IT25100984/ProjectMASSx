@@ -41,11 +41,11 @@
         </div>
     </c:if>
 
-    <div class="p-5 mb-4 bg-primary text-white rounded-3 shadow">
-        <div class="d-flex justify-content-between align-items-center">
+<div class="p-5 mb-4 text-white rounded-3 shadow"
+     style="background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 25%, #94a3b8 50%, #cbd5e1 75%, #f1f5f9 100%);">        <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h1 class="display-5 fw-bold text-white">Doctor Portal</h1>
-                <div class="text-white">
+                <h1 class="display-5 fw-bold text-black">Doctor Portal</h1>
+                <div class="text-black">
                     <p class="fs-4 mb-0">Welcome, Dr. ${user.firstName} ${user.lastName}</p>
                     <%-- Display Specialization below the name --%>
                     <p class="fs-6 opacity-75">
@@ -64,6 +64,11 @@
                 <button type="button" class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#setWorkHoursModal">
                     <i class="bi bi-calendar-check"></i> Set Work Hours
                 </button>
+                <form action="/profile/delete" method="POST" onsubmit="return confirm('WARNING: Are you absolutely certain you want to permanently delete your profile? This cannot be undone.');" style="margin-top: 10px; width: 100%;">
+                    <button type="submit" class="btn btn-danger" style="width: 100%; background-color: #dc3545; color: white; font-weight: bold; border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px;">
+                        Delete Profile
+                    </button>
+                </form>
             </div>
         </div>
     </div>

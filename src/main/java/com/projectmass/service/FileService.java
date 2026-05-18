@@ -9,7 +9,7 @@ public abstract class FileService<T> {
     protected abstract String getFileName();
     protected abstract String getHeader();
 
-    // Subclasses define how to turn an object into a string line
+    // Subclasses define how to turn an object into a delimited text row
     protected abstract String mapToString(T item);
 
     // Subclasses define how to check if a line matches a specific ID
@@ -18,8 +18,6 @@ public abstract class FileService<T> {
     public void logToFile(T data) {
         File file = new File(getFileName());
         try {
-            System.out.println("File absolute path: " + file.getAbsolutePath());
-
             if (!file.exists()) {
                 if (file.createNewFile()) {
                     try (PrintWriter out = new PrintWriter(new FileWriter(file, true))) {
@@ -27,12 +25,8 @@ public abstract class FileService<T> {
                         out.println("Generated on: " + java.time.LocalDateTime.now());
                         out.println("------------------------------------------------");
                     }
-                } else {
-                    System.err.println("Could not create file: " + file.getAbsolutePath());
                 }
             }
-
-            //System.out.println("Writing order: " + mapToString(data));
 
             try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
                 out.println(mapToString(data));
@@ -44,6 +38,32 @@ public abstract class FileService<T> {
         }
     }
 
+    /** Generic deletion engine inherited by all concrete subclasses */
+    public void deleteById(int id) {
+        File file = new File(getFileName());
+        if (!file.exists()) return;
+
+        List<String> linesToKeep = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                // Only evaluate data rows; bypass structural headers completely
+                if (!line.startsWith("=") && !line.startsWith("-") &&
+                        !line.startsWith("Generated") && !line.trim().isEmpty()) {
+
+                    if (isMatch(line, id)) {
+                        continue; // Target found: Skip adding to list to execute deletion
+                    }
+                }
+                linesToKeep.add(line);
+            }
+        } catch (IOException e) {
+            System.err.println("Error scanning file lines for deletion processing: " + e.getMessage());
+        }
+
+        // Overwrite file with the updated, filtered records list
+        writeAll(linesToKeep);
+    }
 
     public List<String> readFile(int... ids) {
         List<String> results = new ArrayList<>();
@@ -75,7 +95,6 @@ public abstract class FileService<T> {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
-                // Skip metadata/headers
                 if (line.startsWith("=") || line.startsWith("-") ||
                         line.startsWith("Generated") || line.trim().isEmpty()) continue;
                 results.add(line);
@@ -95,7 +114,7 @@ public abstract class FileService<T> {
             out.flush();
         } catch (IOException e) {
             System.err.println("CRITICAL ERROR: Could not overwrite " + getFileName());
-            e.printStackTrace(); // show the real cause
+            e.printStackTrace();
         }
     }
 }

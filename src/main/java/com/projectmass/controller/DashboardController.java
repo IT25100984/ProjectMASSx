@@ -8,7 +8,9 @@ import com.projectmass.model.Doctor;
 import com.projectmass.model.Patient;
 import com.projectmass.model.Pharmacy;
 import com.projectmass.model.User;
+import com.projectmass.service.DoctorFileService;
 import com.projectmass.service.MedFileService;
+import com.projectmass.service.PatientFileService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -35,6 +38,12 @@ public class DashboardController {
 
     @Autowired
     private MedFileService medFileService;
+
+    @Autowired
+    private PatientFileService patientFileService;
+
+    @Autowired
+    private DoctorFileService doctorFileService;
 
     @GetMapping("/patientDashboard")
     public String showPatientDashboard(HttpSession session, Model model, HttpServletResponse response) {
