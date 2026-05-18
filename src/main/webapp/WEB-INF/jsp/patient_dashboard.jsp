@@ -238,7 +238,7 @@
                                                         <div class="mb-3">
                                                             <label class="form-label fw-bold">New Preferred Time (Hourly)</label>
                                                             <%-- Extract hour safely --%>
-                                                            <c:set var="startH" value="${not empty currentStart ? currentStart.substring(0,2) : 08}" />
+                                                            <c:set var="startH" value="${not empty currentStart ? currentStart.substring(0,2) : 8}" />
                                                             <c:set var="endH" value="${not empty currentEnd ? currentEnd.substring(0,2) : 18}" />
 
                                                             <select name="newTime" class="form-select" required>
