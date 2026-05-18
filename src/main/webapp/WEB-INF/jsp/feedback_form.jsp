@@ -39,7 +39,7 @@
 
             <div class="mb-3">
               <label class="form-label fw-bold text-secondary">Your Comments</label>
-              <textarea name="comment" class="form-control" rows="4" placeholder="How was your experience with Dr. ?" required></textarea>
+              <textarea name="comment" class="form-control" rows="4" placeholder="How was your experience?" required></textarea>
             </div>
 
             <div class="d-grid gap-2 mt-4">
