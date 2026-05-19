@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 
+// Accepts web requests from appointment ui
 @Controller
 public class AppointmentController {
 

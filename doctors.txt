@@ -1,5 +1,6 @@
 === DOCTOR CLINICAL ROSTER AUDIT LOG ===
-Generated on: 2026-05-18T09:12:43.774937200
+Generated on: 2026-05-19T07:57:06.830918100
 ------------------------------------------------
-2|Jack Bernard|DOCTOR
-3|Jane Weinfell|DOCTOR
+3|Tom Watson|DOCTOR
+4|Jane Bernard|DOCTOR
+6|Alan Watts|DOCTOR
